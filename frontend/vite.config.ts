@@ -17,7 +17,9 @@ export default defineConfig({
       // of the report and the percentage looks better than it is.
       include: ['src/**/*.{ts,tsx}'],
       exclude: ['src/**/*.test.{ts,tsx}', 'src/test/**', 'src/main.tsx'],
-      reporter: ['text', 'html', 'json-summary'],
+      // The second text reporter writes coverage/coverage.txt (every file,
+      // including fully covered ones), which `make coverage` copies to docs/.
+      reporter: ['text', 'html', 'json-summary', ['text', { file: 'coverage.txt', skipFull: false }]],
     },
   },
 })
