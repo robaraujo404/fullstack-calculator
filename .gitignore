@@ -1,0 +1,14 @@
+# Dependencies and build output
+node_modules/
+/frontend/dist/
+/backend/server
+
+# Generated coverage reports (text summaries are committed under docs/coverage/)
+/backend/coverage.out
+/backend/coverage.html
+/frontend/coverage/
+
+# OS and editor files
+.DS_Store
+.idea/
+.vscode/
