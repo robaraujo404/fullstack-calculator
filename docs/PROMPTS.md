@@ -22,7 +22,6 @@ Three implementation plans were drafted in separate sessions from the assignment
 | 6 | "pq nao espera aumentar se tinha dois erros?" | Why not expect a higher score if two errors were fixed? |
 | 7 | "roda" | Run the next review round. |
 | 8 | "aplica e rode outra rodada só com sonneet e opus" | Apply the final fixes and run one more round with Sonnet and Opus only. |
-| 9 | "ok, segue" | Go ahead with the implementation. |
 
 Each review round gave four subagents the same rubric, written by the main agent, with the plans anonymized and shuffled. The rubric scored requirement coverage, proportionality (noise, unjustified pieces), technical design, testing, executability and evaluator impression, and asked reviewers to verify technical claims against official docs or by running code.
 
@@ -37,4 +36,9 @@ Each review round gave four subagents the same rubric, written by the main agent
 
 ## 3. Implementation
 
-Implementation prompts are recorded below as the work progresses.
+The agent implemented the plan step by step: backend domain, HTTP layer, frontend logic, UI, Docker and CI, then docs. Each step was committed only after its tests, linters and type checks passed. It also launched the real app and drove it in headless Chrome to check the UI on desktop and at 375 px, and ran every `curl` example in the README against the server before including it.
+
+| # | Prompt (verbatim) | Summary |
+|---|---|---|
+| 9 | "ok, segue" | Go ahead with the implementation. |
+| 10 | "dentro da pasta ~/apps/pessoal tem o ssh pra minha conta pessoal robaraujo404" + repository name "fullstack-calculator" | Publish under my personal GitHub account (its SSH key is already configured) as `fullstack-calculator`. |
