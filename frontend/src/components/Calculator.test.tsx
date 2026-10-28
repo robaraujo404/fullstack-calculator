@@ -56,6 +56,18 @@ describe('Calculator', () => {
     expect(second()).toHaveAccessibleDescription(/dot as the decimal separator/)
   })
 
+  it('names the operand fields after the selected operation', async () => {
+    const { user } = setup()
+
+    await user.click(screen.getByRole('radio', { name: 'Power' }))
+    expect(screen.getByRole('textbox', { name: 'Base' })).toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: 'Exponent' })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('radio', { name: 'Percentage: x% of y' }))
+    expect(screen.getByRole('textbox', { name: 'Percent' })).toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: 'Value' })).toBeInTheDocument()
+  })
+
   it('shows API errors and moves focus to them', async () => {
     const client = vi
       .fn<CalculateFn>()

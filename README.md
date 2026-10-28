@@ -53,17 +53,18 @@ Other checks, as run in CI:
 - **Backend:** `cd backend && gofmt -l . && go vet ./...`
 - **Frontend:** `cd frontend && npm run lint && npm run typecheck && npm run build`
 
-Coverage measured on 2026-10-27 with Go 1.27.3, Node 24.22 and Vitest 5.0.5:
+Coverage measured on 2026-10-28 with Go 1.27.3, Node 24.22 and Vitest 5.0.5:
 
 | Layer | Scope | Coverage |
 |---|---|---|
 | Backend | `internal/calculator` | 100% of statements |
-| Backend | `internal/httpapi` | 96.9% of statements |
+| Backend | `internal/httpapi` | 97.2% of statements |
+| Backend | `cmd/server` | 66.7% of statements |
 | Frontend | every file in `src/`, tested or not (tests and `main.tsx` excluded) | 100% of lines, branches and functions |
 
 Full reports are in [`docs/coverage/backend.txt`](docs/coverage/backend.txt) and [`docs/coverage/frontend.txt`](docs/coverage/frontend.txt).
 
-- **`cmd/server`** only wires the configuration and the HTTP server. The Docker smoke test exercises it instead of unit tests.
+- **`cmd/server`** tests cover configuration, startup errors and graceful shutdown. `main()` itself is left to the Docker smoke test.
 - **Uncovered lines in `httpapi`** are defensive branches (logging an unexpected 500, re-raising `http.ErrAbortHandler`) and `requestError.Error`, which the handler never calls.
 
 ## API
@@ -146,7 +147,7 @@ $ curl -s -X POST localhost:8080/api/v1/sqrt -H 'Content-Type: application/json'
 {"error":{"code":"INVALID_OPERAND","message":"operand is outside the operation's domain"}}
 
 $ curl -s -X POST localhost:8080/api/v1/add -H 'Content-Type: application/json' -d '{"a":"2","b":3}'
-{"error":{"code":"INVALID_REQUEST","message":"field \"a\" must be a number within float64 range"}}
+{"error":{"code":"INVALID_REQUEST","message":"field \"a\" must be a number"}}
 
 $ curl -s -X POST localhost:8080/api/v1/add -H 'Content-Type: application/json' -d '{"a":2}'
 {"error":{"code":"MISSING_OPERAND","message":"operand \"b\" is required for add"}}
@@ -196,12 +197,12 @@ Dockerfile               multi-stage build into one distroless image
 
 ## Assumptions
 
-- **Percentage:** `percentage(a, b)` is a% of b, computed as `a * b / 100` (15% of 200 = 30). Multiplying first keeps common cases exact (7% of 100 is 7, not `7.000000000000001`), but it overflows earlier for operands near the float64 limit: `percentage(1e308, 10)` returns 422.
+- **Percentage:** `percentage(a, b)` is a% of b, computed as `a * b / 100` (15% of 200 = 30). Multiplying first keeps common cases exact (7% of 100 is 7, not `7.000000000000001`). If `a * b` overflows, it is computed as `a / 100 * b`, so `percentage(1e300, 1e10)` still returns `1e308`.
 - **Power:** uses `math.Pow`, so `0^0 = 1` and `0^-1` returns 422 `RESULT_OUT_OF_RANGE`.
 - **Input format:** the decimal separator is a dot. Inputs accept a sign, decimals and scientific notation (`1e6`).
-- **Underflow:** numbers smaller than the smallest float64, such as `1e-400`, become 0.
-- **Display:** the UI shows non-integers rounded to 15 significant digits, so `0.1 + 0.2` shows `0.3`. Integers are shown exactly. The API returns the raw float64.
-- **Requests:** operation names are case-sensitive, and request bodies are limited to 1 KiB.
+- **Underflow:** the API reads numbers smaller than the smallest float64, such as `1e-400`, as 0. The UI rejects them, so `1 ÷ 1e-400` is never sent as a division by zero.
+- **Display:** the UI shows non-integers rounded to 15 significant digits, so `0.1 + 0.2` shows `0.3`. Integers up to 2^53 are shown exactly; larger ones in scientific notation (`1.152921504606847e+18`). The API returns the raw float64.
+- **Requests:** operation names are case-sensitive, and request bodies are limited to 1 KiB. JSON field names follow Go's `encoding/json`: they match case-insensitively (`"A"` is read as `a`), and when a key repeats, the last value wins.
 
 ## Known limitations and future improvements
 
@@ -212,4 +213,4 @@ Dockerfile               multi-stage build into one distroless image
 
 ## AI usage
 
-Built with Claude Code. Every prompt is recorded in [`docs/PROMPTS.md`](docs/PROMPTS.md). Planning and the review of competing plans took about two hours, and the implementation, tests and documentation about one hour.
+Built with Claude Code. My prompts are in [`docs/PROMPTS.md`](docs/PROMPTS.md). Planning and the review of competing plans took about two hours, and the implementation, tests and documentation about one hour.

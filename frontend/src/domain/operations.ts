@@ -6,24 +6,33 @@ export interface Operation {
   symbol: string
   /** Accessible name of the selector button. */
   label: string
-  arity: 1 | 2
+  /** Labels of the operand fields; their count is the operation's arity. */
+  inputs: readonly [string] | readonly [string, string]
   /** Renders the expression shown above the result. */
   expression: (a: string, b: string) => string
 }
 
-/** Single source for the selector, the accessible names and the API call. */
+const NUMBERS = ['First number', 'Second number'] as const
+
+/** Single source for the selector, the operand labels, the accessible names and the API call. */
 export const OPERATIONS: readonly Operation[] = [
-  { id: 'add', symbol: '+', label: 'Add', arity: 2, expression: (a, b) => `${a} + ${b}` },
-  { id: 'subtract', symbol: '−', label: 'Subtract', arity: 2, expression: (a, b) => `${a} − ${b}` },
-  { id: 'multiply', symbol: '×', label: 'Multiply', arity: 2, expression: (a, b) => `${a} × ${b}` },
-  { id: 'divide', symbol: '÷', label: 'Divide', arity: 2, expression: (a, b) => `${a} ÷ ${b}` },
-  { id: 'power', symbol: 'xʸ', label: 'Power', arity: 2, expression: (a, b) => `${a} ^ ${b}` },
-  { id: 'sqrt', symbol: '√x', label: 'Square root', arity: 1, expression: (a) => `√${a}` },
+  { id: 'add', symbol: '+', label: 'Add', inputs: NUMBERS, expression: (a, b) => `${a} + ${b}` },
+  { id: 'subtract', symbol: '−', label: 'Subtract', inputs: NUMBERS, expression: (a, b) => `${a} − ${b}` },
+  { id: 'multiply', symbol: '×', label: 'Multiply', inputs: NUMBERS, expression: (a, b) => `${a} × ${b}` },
+  { id: 'divide', symbol: '÷', label: 'Divide', inputs: NUMBERS, expression: (a, b) => `${a} ÷ ${b}` },
+  {
+    id: 'power',
+    symbol: 'xʸ',
+    label: 'Power',
+    inputs: ['Base', 'Exponent'],
+    expression: (a, b) => `${a} ^ ${b}`,
+  },
+  { id: 'sqrt', symbol: '√x', label: 'Square root', inputs: ['Number'], expression: (a) => `√${a}` },
   {
     id: 'percentage',
     symbol: 'x% of y',
     label: 'Percentage: x% of y',
-    arity: 2,
+    inputs: ['Percent', 'Value'],
     expression: (a, b) => `${a}% of ${b}`,
   },
 ]

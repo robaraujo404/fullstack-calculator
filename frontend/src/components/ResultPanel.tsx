@@ -1,4 +1,4 @@
-import type { Ref } from 'react'
+import type { CSSProperties, Ref } from 'react'
 
 import { formatResult } from '../domain/formatResult'
 import type { CalculatorState } from '../hooks/useCalculator'
@@ -18,7 +18,16 @@ interface ResultPanelProps {
   ref?: Ref<HTMLDivElement>
 }
 
+function resultText(state: CalculatorState): string {
+  if (state.status === 'success') return formatResult(state.value)
+  return state.status === 'loading' ? '…' : ''
+}
+
 export function ResultPanel({ state, expression, ref }: ResultPanelProps) {
+  const result = resultText(state)
+
+  // --chars lets the stylesheet shrink long results to fit on one line instead
+  // of breaking them mid-number.
   return (
     <div className="display" role="region" aria-label="Result" tabIndex={-1} ref={ref}>
       <p className="display-expression">{state.status === 'success' ? expression : ''}</p>
@@ -27,9 +36,8 @@ export function ResultPanel({ state, expression, ref }: ResultPanelProps) {
           {ERROR_MESSAGES[state.code] ?? state.message}
         </p>
       ) : (
-        <output className="display-result" aria-live="polite">
-          {state.status === 'success' && formatResult(state.value)}
-          {state.status === 'loading' && '…'}
+        <output className="display-result" aria-live="polite" style={{ '--chars': result.length } as CSSProperties}>
+          {result}
         </output>
       )}
     </div>

@@ -18,7 +18,7 @@ test:
 # HTML reports stay local (git-ignored); text summaries go to docs/coverage/.
 coverage:
 	mkdir -p docs/coverage
-	cd backend && go test -coverprofile=coverage.out ./internal/... \
+	cd backend && go test -coverprofile=coverage.out ./... \
 		&& go tool cover -html=coverage.out -o coverage.html \
 		&& go tool cover -func=coverage.out > ../docs/coverage/backend.txt
 	cd frontend && npm run test:coverage && cp coverage/coverage.txt ../docs/coverage/frontend.txt

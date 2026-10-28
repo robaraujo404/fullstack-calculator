@@ -104,18 +104,26 @@ func calculate(w http.ResponseWriter, r *http.Request) (calculateResponse, error
 	return calculateResponse{Operation: op.Name, Result: result}, nil
 }
 
+// decodeRequest follows encoding/json in matching field names
+// case-insensitively and keeping the last of duplicate keys; the README
+// documents both.
 func decodeRequest(body []byte) (calculateRequest, error) {
-	var req calculateRequest
+	// Decoding into a pointer exposes a null body, which would otherwise leave
+	// a struct untouched and surface later as a missing operand.
+	var req *calculateRequest
 	dec := json.NewDecoder(bytes.NewReader(body))
 	dec.DisallowUnknownFields()
 
 	if err := dec.Decode(&req); err != nil {
-		return req, invalidRequest(decodeErrorMessage(err))
+		return calculateRequest{}, invalidRequest(decodeErrorMessage(err))
+	}
+	if req == nil {
+		return calculateRequest{}, invalidRequest("request body must be a JSON object")
 	}
 	if err := dec.Decode(&struct{}{}); err != io.EOF {
-		return req, invalidRequest("request body must contain a single JSON object")
+		return calculateRequest{}, invalidRequest("request body must contain a single JSON object")
 	}
-	return req, nil
+	return *req, nil
 }
 
 func decodeErrorMessage(err error) string {
@@ -126,10 +134,12 @@ func decodeErrorMessage(err error) string {
 		return "request body is empty"
 	case errors.As(err, &typeErr) && typeErr.Field == "":
 		return "request body must be a JSON object"
+	case errors.As(err, &typeErr) && strings.HasPrefix(typeErr.Value, "number"):
+		// encoding/json reports a number that overflows float64 ("a": 1e400)
+		// as a type error whose Value is "number 1e400".
+		return fmt.Sprintf("field %q is outside the float64 range", typeErr.Field)
 	case errors.As(err, &typeErr):
-		// Covers both wrong types ("a": "10") and numbers outside the float64
-		// range ("a": 1e400), which encoding/json reports with the same error.
-		return fmt.Sprintf("field %q must be a number within float64 range", typeErr.Field)
+		return fmt.Sprintf("field %q must be a number", typeErr.Field)
 	case errors.As(err, &syntaxErr), errors.Is(err, io.ErrUnexpectedEOF):
 		return "request body must be valid JSON"
 	default:

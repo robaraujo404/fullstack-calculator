@@ -14,6 +14,7 @@ describe('parseOperand', () => {
     ['2.5E-3', 0.0025],
     ['  12  ', 12],
     ['0', 0],
+    ['0e-400', 0],
   ])('accepts %j as %d', (raw, value) => {
     expect(parseOperand(raw)).toEqual({ ok: true, value })
   })
@@ -31,6 +32,7 @@ describe('parseOperand', () => {
     ['1.2.3', 'valid number'],
     ['--1', 'valid number'],
     ['1e400', 'too large'],
+    ['1e-400', 'too small'],
   ])('rejects %j', (raw, message) => {
     const result = parseOperand(raw)
     expect(result.ok).toBe(false)

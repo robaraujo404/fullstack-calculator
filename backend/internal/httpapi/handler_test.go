@@ -63,8 +63,12 @@ func TestCalculateSuccess(t *testing.T) {
 		{op: "percentage", body: `{"a": 15, "b": 200}`, want: 30},
 		{op: "add", body: `{"a": 1e3, "b": -0.5}`, want: 999.5},
 		{op: "add", body: `{"a": 0, "b": 0}`, want: 0},
-		// Values below the smallest float64 decode to 0 (documented assumption).
+		// Documented encoding/json behaviors: values below the smallest float64
+		// decode to 0, field names match case-insensitively and the last of
+		// duplicate keys wins.
 		{op: "add", body: `{"a": 1e-400, "b": 1}`, want: 1},
+		{op: "add", body: `{"A": 2, "B": 3}`, want: 5},
+		{op: "add", body: `{"a": 1, "a": 5, "b": 2}`, want: 7},
 	}
 
 	h := newTestRouter(t, "")
@@ -98,11 +102,11 @@ func TestCalculateErrors(t *testing.T) {
 		{name: "invalid JSON", body: `{a: 1}`, wantStatus: 400, wantCode: "INVALID_REQUEST", wantMessage: "valid JSON"},
 		{name: "array body", body: `[1, 2]`, wantStatus: 400, wantCode: "INVALID_REQUEST", wantMessage: "JSON object"},
 		{name: "string body", body: `"1 + 2"`, wantStatus: 400, wantCode: "INVALID_REQUEST", wantMessage: "JSON object"},
-		{name: "numeric string", body: `{"a": "10", "b": 1}`, wantStatus: 400, wantCode: "INVALID_REQUEST", wantMessage: `"a"`},
-		{name: "number out of float64 range", body: `{"a": 1e400, "b": 1}`, wantStatus: 400, wantCode: "INVALID_REQUEST", wantMessage: "float64 range"},
+		{name: "numeric string", body: `{"a": "10", "b": 1}`, wantStatus: 400, wantCode: "INVALID_REQUEST", wantMessage: `field "a" must be a number`},
+		{name: "number out of float64 range", body: `{"a": 1e400, "b": 1}`, wantStatus: 400, wantCode: "INVALID_REQUEST", wantMessage: `field "a" is outside the float64 range`},
 		{name: "unknown field", body: `{"a": 1, "b": 2, "c": 3}`, wantStatus: 400, wantCode: "INVALID_REQUEST", wantMessage: `"c"`},
 		{name: "concatenated objects", body: `{"a": 1, "b": 2}{"a": 3}`, wantStatus: 400, wantCode: "INVALID_REQUEST", wantMessage: "single JSON object"},
-		{name: "null body", body: `null`, wantStatus: 400, wantCode: "MISSING_OPERAND"},
+		{name: "null body", body: `null`, wantStatus: 400, wantCode: "INVALID_REQUEST", wantMessage: "JSON object"},
 		{name: "missing a", body: `{"b": 2}`, wantStatus: 400, wantCode: "MISSING_OPERAND", wantMessage: `"a"`},
 		{name: "null a", body: `{"a": null, "b": 2}`, wantStatus: 400, wantCode: "MISSING_OPERAND", wantMessage: `"a"`},
 		{name: "missing b", body: `{"a": 1}`, wantStatus: 400, wantCode: "MISSING_OPERAND", wantMessage: `"b"`},

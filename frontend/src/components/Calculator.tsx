@@ -26,7 +26,8 @@ export function Calculator({ client }: CalculatorProps) {
   const resultRef = useRef<HTMLDivElement>(null)
 
   const operation = getOperation(operationId)
-  const needsB = operation.arity === 2
+  const [labelA, labelB] = operation.inputs
+  const needsB = labelB !== undefined
   const loading = state.status === 'loading'
 
   // The fieldset is disabled while the request runs, which drops keyboard
@@ -80,13 +81,7 @@ export function Calculator({ client }: CalculatorProps) {
       <fieldset className="controls" disabled={loading}>
         <legend className="visually-hidden">Calculation</legend>
 
-        <OperandInput
-          id="operand-a"
-          label={needsB ? 'First number' : 'Number'}
-          value={a}
-          error={errors.a}
-          onChange={changeA}
-        />
+        <OperandInput id="operand-a" label={labelA} value={a} error={errors.a} onChange={changeA} />
 
         <fieldset className="operations">
           <legend className="visually-hidden">Operation</legend>
@@ -106,7 +101,7 @@ export function Calculator({ client }: CalculatorProps) {
         </fieldset>
 
         {needsB && (
-          <OperandInput id="operand-b" label="Second number" value={b} error={errors.b} onChange={changeB} />
+          <OperandInput id="operand-b" label={labelB} value={b} error={errors.b} onChange={changeB} />
         )}
 
         <button type="submit" className="equals" aria-label="Calculate">

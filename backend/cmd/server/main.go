@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -41,7 +42,8 @@ func main() {
 	}
 }
 
-// run serves until ctx is cancelled, then shuts down gracefully.
+// run validates the configuration, binds the port and serves until ctx is
+// cancelled.
 func run(ctx context.Context, cfg config, logger *slog.Logger) error {
 	if cfg.staticDir != "" {
 		if _, err := os.Stat(cfg.staticDir); err != nil {
@@ -49,9 +51,22 @@ func run(ctx context.Context, cfg config, logger *slog.Logger) error {
 		}
 	}
 
+	// Binding before logging means "listening" is only reported once the port
+	// is actually open.
+	ln, err := net.Listen("tcp", ":"+cfg.port)
+	if err != nil {
+		return err
+	}
+	logger.Info("listening", "addr", ln.Addr().String(), "static_dir", cfg.staticDir)
+
+	return serve(ctx, ln, httpapi.NewRouter(logger, cfg.staticDir), logger)
+}
+
+// serve handles requests on ln until ctx is cancelled, then shuts down
+// gracefully.
+func serve(ctx context.Context, ln net.Listener, handler http.Handler, logger *slog.Logger) error {
 	srv := &http.Server{
-		Addr:              ":" + cfg.port,
-		Handler:           httpapi.NewRouter(logger, cfg.staticDir),
+		Handler:           handler,
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       10 * time.Second,
 		WriteTimeout:      10 * time.Second,
@@ -59,10 +74,7 @@ func run(ctx context.Context, cfg config, logger *slog.Logger) error {
 	}
 
 	serveErr := make(chan error, 1)
-	go func() {
-		logger.Info("listening", "addr", srv.Addr, "static_dir", cfg.staticDir)
-		serveErr <- srv.ListenAndServe()
-	}()
+	go func() { serveErr <- srv.Serve(ln) }()
 
 	select {
 	case err := <-serveErr:

@@ -54,7 +54,8 @@ func TestApply(t *testing.T) {
 		{name: "percentage", op: "percentage", operands: []float64{15, 200}, want: 30},
 		{name: "percentage is exact for common values", op: "percentage", operands: []float64{7, 100}, want: 7},
 		{name: "percentage operand order", op: "percentage", operands: []float64{200, 15}, want: 30},
-		{name: "percentage overflow near float64 limit", op: "percentage", operands: []float64{1e308, 10}, wantErr: calculator.ErrResultOutOfRange},
+		{name: "percentage divides first when the product overflows", op: "percentage", operands: []float64{1e300, 1e10}, want: 1e308},
+		{name: "percentage overflow", op: "percentage", operands: []float64{1e308, 1e10}, wantErr: calculator.ErrResultOutOfRange},
 
 		{name: "NaN operand", op: "add", operands: []float64{math.NaN(), 1}, wantErr: calculator.ErrInvalidOperand},
 		{name: "infinite operand", op: "add", operands: []float64{1, math.Inf(1)}, wantErr: calculator.ErrInvalidOperand},

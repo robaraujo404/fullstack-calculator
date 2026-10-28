@@ -22,6 +22,13 @@ describe('formatResult', () => {
   })
 
   it.each([
+    [2 ** 60, '1.152921504606847e+18'],
+    [-(2 ** 60), '-1.152921504606847e+18'],
+  ])('shows %d in scientific notation instead of padding it with zeros', (value, expected) => {
+    expect(formatResult(value)).toBe(expected)
+  })
+
+  it.each([
     [100000000000000.4, '100000000000000'],
     [123450000000000.25, '123450000000000'],
   ])('keeps the integer part of %d', (value, expected) => {

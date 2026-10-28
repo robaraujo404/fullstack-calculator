@@ -84,8 +84,12 @@ func divide(x []float64) (float64, error) {
 }
 
 // percentage returns a% of b. Multiplying before dividing keeps common cases
-// exact (7% of 100 is 7, whereas 7/100*100 is 7.000000000000001), at the cost
-// of overflowing earlier for operands near the float64 limit.
+// exact (7% of 100 is 7, whereas 7/100*100 is 7.000000000000001). When the
+// product overflows, dividing first still finds any result that fits in a
+// float64.
 func percentage(x []float64) (float64, error) {
-	return x[0] * x[1] / 100, nil
+	if p := x[0] * x[1] / 100; !math.IsInf(p, 0) {
+		return p, nil
+	}
+	return x[0] / 100 * x[1], nil
 }

@@ -26,6 +26,7 @@ func TestRouting(t *testing.T) {
 	}{
 		{method: http.MethodGet, path: "/api/v1/add", wantStatus: 405, wantCode: "METHOD_NOT_ALLOWED"},
 		{method: http.MethodGet, path: "/api/v1/unknown", wantStatus: 404, wantCode: "UNSUPPORTED_OPERATION"},
+		{method: http.MethodPost, path: "/api", wantStatus: 404, wantCode: "NOT_FOUND"},
 		{method: http.MethodPost, path: "/api/nothing", wantStatus: 404, wantCode: "NOT_FOUND"},
 		{method: http.MethodPost, path: "/api/v1/add/extra", wantStatus: 404, wantCode: "NOT_FOUND"},
 		{method: http.MethodPost, path: "/api/v2/add", wantStatus: 404, wantCode: "NOT_FOUND"},
@@ -61,6 +62,25 @@ func TestRouting(t *testing.T) {
 		body, _ := io.ReadAll(rec.Body)
 		if rec.Code != http.StatusOK || !strings.Contains(string(body), "calculator") {
 			t.Errorf("GET / = %d %s", rec.Code, body)
+		}
+	})
+
+	t.Run("does not list directories", func(t *testing.T) {
+		assets := filepath.Join(staticDir, "assets")
+		if err := os.Mkdir(assets, 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(assets, "app.js"), []byte("console.log(1)"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		h := newTestRouter(t, staticDir)
+
+		for path, want := range map[string]int{"/assets/": http.StatusNotFound, "/assets/app.js": http.StatusOK} {
+			rec := httptest.NewRecorder()
+			h.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, path, nil))
+			if rec.Code != want {
+				t.Errorf("GET %s = %d, want %d", path, rec.Code, want)
+			}
 		}
 	})
 }

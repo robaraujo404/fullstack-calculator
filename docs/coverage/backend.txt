@@ -1,3 +1,7 @@
+sezzle-calculator/cmd/server/main.go:25:		loadConfig		100.0%
+sezzle-calculator/cmd/server/main.go:33:		main			0.0%
+sezzle-calculator/cmd/server/main.go:47:		run			75.0%
+sezzle-calculator/cmd/server/main.go:67:		serve			83.3%
 sezzle-calculator/internal/calculator/calculator.go:37:	Lookup			100.0%
 sezzle-calculator/internal/calculator/calculator.go:47:	Apply			100.0%
 sezzle-calculator/internal/calculator/calculator.go:71:	add			100.0%
@@ -6,7 +10,7 @@ sezzle-calculator/internal/calculator/calculator.go:73:	multiply		100.0%
 sezzle-calculator/internal/calculator/calculator.go:74:	power			100.0%
 sezzle-calculator/internal/calculator/calculator.go:75:	sqrt			100.0%
 sezzle-calculator/internal/calculator/calculator.go:79:	divide			100.0%
-sezzle-calculator/internal/calculator/calculator.go:89:	percentage		100.0%
+sezzle-calculator/internal/calculator/calculator.go:90:	percentage		100.0%
 sezzle-calculator/internal/httpapi/errors.go:29:	Error			0.0%
 sezzle-calculator/internal/httpapi/errors.go:31:	invalidRequest		100.0%
 sezzle-calculator/internal/httpapi/errors.go:38:	mapError		100.0%
@@ -15,12 +19,13 @@ sezzle-calculator/internal/httpapi/errors.go:66:	writeJSON		100.0%
 sezzle-calculator/internal/httpapi/handler.go:35:	handleCalculate		100.0%
 sezzle-calculator/internal/httpapi/handler.go:44:	handleNotFound		100.0%
 sezzle-calculator/internal/httpapi/handler.go:54:	calculate		100.0%
-sezzle-calculator/internal/httpapi/handler.go:107:	decodeRequest		100.0%
-sezzle-calculator/internal/httpapi/handler.go:121:	decodeErrorMessage	100.0%
-sezzle-calculator/internal/httpapi/handler.go:141:	operandsFor		100.0%
+sezzle-calculator/internal/httpapi/handler.go:110:	decodeRequest		100.0%
+sezzle-calculator/internal/httpapi/handler.go:129:	decodeErrorMessage	100.0%
+sezzle-calculator/internal/httpapi/handler.go:151:	operandsFor		100.0%
 sezzle-calculator/internal/httpapi/middleware.go:12:	logRequests		100.0%
 sezzle-calculator/internal/httpapi/middleware.go:26:	recoverPanics		90.0%
 sezzle-calculator/internal/httpapi/middleware.go:50:	WriteHeader		100.0%
-sezzle-calculator/internal/httpapi/router.go:25:	NewRouter		100.0%
-sezzle-calculator/internal/httpapi/router.go:39:	handleHealth		100.0%
-total:							(statements)		97.5%
+sezzle-calculator/internal/httpapi/router.go:28:	NewRouter		100.0%
+sezzle-calculator/internal/httpapi/router.go:43:	handleHealth		100.0%
+sezzle-calculator/internal/httpapi/router.go:49:	noDirectoryListing	100.0%
+total:							(statements)		91.9%

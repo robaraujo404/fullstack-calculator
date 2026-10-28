@@ -15,13 +15,18 @@ export function parseOperand(raw: string): ParseResult {
   if (DECIMAL_COMMA.test(text)) {
     return { ok: false, error: 'Use a dot as the decimal separator, e.g. 1.5.' }
   }
-  if (!NUMBER.test(text)) {
+  const match = NUMBER.exec(text)
+  if (!match) {
     return { ok: false, error: 'Enter a valid number, e.g. 42, -3.5 or 1e6.' }
   }
 
   const value = Number(text)
   if (!Number.isFinite(value)) {
     return { ok: false, error: 'This number is too large.' }
+  }
+  // Number('1e-400') is 0, which would turn 1 ÷ 1e-400 into a division by zero.
+  if (value === 0 && /[1-9]/.test(match[1])) {
+    return { ok: false, error: 'This number is too small.' }
   }
   return { ok: true, value }
 }
